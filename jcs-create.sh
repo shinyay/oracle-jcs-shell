@@ -31,7 +31,7 @@ function usage() {
     cat <<EOF
 $(basename ${0}) is a tool for ...
 Usage:
-    $(basename ${0}) json|instance|bulk -i <IDENTITYDOMAIN> -p <PASSWORD> -r <REGION>
+    $(basename ${0}) [json|instance|bulk] -i <IDENTITYDOMAIN> -p <PASSWORD> -r <REGION [us|emea]>
 Options
     json         print Create JSON for JCS Instance
     instance     print Create JCS Instance with generated JSON
