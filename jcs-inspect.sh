@@ -10,16 +10,16 @@ version="1.0.0"
 #
 # ##################################################
 
-arrayIDDOMAIN=(IDENTITY DOMAIN NAME ARRAY)
-arrayPASSWORD=(CLOUD PASSWORD ARRAY)
+-arrayIDDOMAIN=(IDENTITY DOMAIN NAME ARRAY)
+-arrayPASSWORD=(CLOUD PASSWORD ARRAY)
 
 function mainScript() {
   count=${#arrayIDDOMAIN[@]}
   count=$((count-1))
 
-  while [ ${count} -ge 0 ];
+  while [ ${count} -ge 0 ]
   do
-    echo "----- ${arrayIDDOMAIN[$count]} --------------------"
+    echo "----- ${arrayIDDOMAIN[${count}]} --------------------"
     if [ ${IPINFO} -eq 1 ]; then
       displayIPInfo
     else
@@ -35,7 +35,7 @@ function displayServcieInfo() {
 }
 
 function displayIPInfo() {
-  curl -i -X GET -u cloud.admin:${arrayPASSWORD[$count]} -H "X-ID-TENANT-NAME:${arrayIDDOMAIN[$count]}" https://jcs.emea.oraclecloud.com/paas/service/jcs/api/v1.1/instances/${arrayIDDOMAIN[$count]}/Alpha01A-JCS|sed -n -e 's/^[ \t]*//' -e 's/\\//g' -e 's/,$//g' -e '/wls_admin_url/p' -e '/otd_admin_url/p'
+  curl -i -X GET -u cloud.admin:${arrayPASSWORD[$count]} -H "X-ID-TENANT-NAME:${arrayIDDOMAIN[$count]}" https://jcs.emea.oraclecloud.com/paas/service/jcs/api/v1.1/instances/${arrayIDDOMAIN[$count]}/Alpha01A-JCS|sed -n -e 's/^[ \t]*//' -e 's/\\//g' -e 's/,$//g' -e '/wls_admin_url/p' -e '/otd_admin_url/p' -e '/db_em_url/p'
 }
 
 function usage() {
@@ -50,6 +50,9 @@ EOF
 }
 
 # Handle Options
+if [ $# -eq 0 ]; then
+  IPINFO=0
+fi
 while [ $# -gt 0 ];
 do
     case ${1} in
