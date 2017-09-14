@@ -15,11 +15,12 @@ function mainScript() {
 }
 
 function generateJson() {
-  sed "s/IDDOMAIN/${IDDOMAIN}/g" wls12cR1-EE-OTD.json | sed "s/CLOUDPASSWORD/${PASSWORD}/g" > wls12cR1-EE-OTD.json.${IDDOMAIN}
+  sed "s/IDDOMAIN/${IDDOMAIN}/g" wls12cR1-EE-OTD.json | sed "s/CLOUDUSER/${USER}/g" | sed "s/CLOUDPASSWORD/${PASSWORD}/g" > wls12cR1-EE-OTD.json.${IDDOMAIN}
 }
 
 function createInstance() {
-  curl -i -X POST -u cloud.admin:${PASSWORD} -d @wls12cR1-EE-OTD.json.${IDDOMAIN} -H "Content-Type:application/vnd.com.oracle.oracloud.provisioning.Service+json" -H "X-ID-TENANT-NAME:${IDDOMAIN}" https://${ENDPOINT}/paas/service/jcs/api/v1.1/instances/${IDDOMAIN}
+  #curl -i -X POST -u cloud.admin:${PASSWORD} -d @wls12cR1-EE-OTD.json.${IDDOMAIN} -H "Content-Type:application/vnd.com.oracle.oracloud.provisioning.Service+json" -H "X-ID-TENANT-NAME:${IDDOMAIN}" https://${ENDPOINT}/paas/service/jcs/api/v1.1/instances/${IDDOMAIN}
+  curl -i -X POST -u ${USER}:${PASSWORD} -d @wls12cR1-EE-OTD.json.${IDDOMAIN} -H "Content-Type:application/vnd.com.oracle.oracloud.provisioning.Service+json" -H "X-ID-TENANT-NAME:${IDDOMAIN}" https://${ENDPOINT}/paas/service/jcs/api/v1.1/instances/${IDDOMAIN}
 }
 
 function bulkCreate() {
@@ -31,7 +32,7 @@ function usage() {
     cat <<EOF
 $(basename ${0}) is a tool for ...
 Usage:
-    $(basename ${0}) [json|instance|bulk] -i <IDENTITYDOMAIN> -p <PASSWORD> -r <REGION [us|emea]>
+    $(basename ${0}) [json|instance|bulk] -i <IDENTITYDOMAIN> -u <USER> -p <PASSWORD> -r <REGION [us|emea|jp]>
 Options
     json         print Create JSON for JCS Instance
     instance     print Create JCS Instance with generated JSON
@@ -76,6 +77,10 @@ do
             shift
         ;;
 
+        --user|-u)
+	    USER=${2}
+            shift
+	;;
         --password|-p)
             PASSWORD=${2}
             shift
@@ -89,6 +94,9 @@ do
 	      ;;
 	      "emea")
 	        ENDPOINT=jcs.emea.oraclecloud.com
+	      ;;
+	      "jp")
+	        ENDPOINT=psm.jpcom.oraclecloud.com
               ;;
               *)
 	        echo "[ERROR] Invalid Region '${REGION}'"
