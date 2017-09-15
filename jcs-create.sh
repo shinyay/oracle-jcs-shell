@@ -6,12 +6,23 @@ version="1.0.0"
 #
 # HISTORY:
 #
+# * 17/09/15 - v1.0.1  - Fix input argument style
 # * 17/06/21 - v1.0.0  - First Creation
 #
 # ##################################################
 
 function mainScript() {
-  echo -n
+  case ${COMMAND} in
+    'JSON' )
+      generateJson
+    ;;
+    'INSTANCE' )
+      createInstance
+    ;;
+    'BULK' )
+      bulkCreate
+    ;;
+  esac
 }
 
 function generateJson() {
@@ -31,12 +42,21 @@ function bulkCreate() {
 function usage() {
     cat <<EOF
 $(basename ${0}) is a tool for ...
+
 Usage:
     $(basename ${0}) [json|instance|bulk] -i <IDENTITYDOMAIN> -u <USER> -p <PASSWORD> -r <REGION [us|emea|jp]>
-Options
-    json         print Create JSON for JCS Instance
-    instance     print Create JCS Instance with generated JSON
-    bulk         print Create JCS Instance and JSON simultaneously
+
+Commands:
+    json              Create JSON for JCS Instance
+    instance          Create JCS Instance with generated JSON
+    bulk              Create JCS Instance and JSON simultaneously
+Options:
+    -v, --version     print $(basename ${0}) ${VERSION}
+    -h, --help        print help
+    -i, --iddomain    Your Identity Domain Name
+    -u, --user        Your Cloud ID
+    -p, --password    Your Cloud password
+    -r, --regiron     Your Cloud Region
 EOF
 }
 
@@ -47,88 +67,95 @@ if [ $# -eq 0 ]; then
 fi
 
 # Handle Options
-while [ $# -gt 0 ];
+for OPT in "$@"
 do
-    case ${1} in
-
-        --debug|-d)
-            set -x
-        ;;
-
-        --version|-v)
-            echo "$(basename ${0}) ${version}"
-            exit 0
-        ;;
-
-        json)
-            COMMAND=JSON
-        ;;
-
-        instance)
-            COMMAND=INSTANCE
-        ;;
-
-        bulk)
-            COMMAND=BULK
-        ;;
-
-        --iddomain|-i)
-            IDDOMAIN=${2}
-            shift
-        ;;
-
-        --user|-u)
-	    USER=${2}
-            shift
-	;;
-        --password|-p)
-            PASSWORD=${2}
-            shift
-        ;;
-
-        --region|-r)
-            REGION=${2}
-	    case ${REGION} in
+  case "$OPT" in
+    '-v'|'--version' )
+      echo "$(basename ${0}) ${VERSION}"
+      exit 0
+      ;;
+    '-h'|'--help' )
+      usage
+      exit 0
+      ;;
+    '-d'|'--debug' )
+      set -x
+      ;;
+    '-i'|'--iddomain' )
+      if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
+        echo "$PROGNAME: option requires an argument -- $1" 1>&2
+        exit 1
+      fi
+      IDDOMAIN="$2"
+      shift 2
+      ;;
+    '-u'|'--user' )
+      if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
+        echo "$PROGNAME: option requires an argument -- $1" 1>&2
+        exit 1
+      fi
+      USER="$2"
+      shift 2
+      ;;
+    '-p'|'--password' )
+      if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
+        echo "$PROGNAME: option requires an argument -- $1" 1>&2
+        exit 1
+      fi
+      PASSWORD="$2"
+      shift 2
+      ;;
+    '-r'|'--region' )
+      if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
+        echo "$PROGNAME: option requires an argument -- $1" 1>&2
+        exit 1
+      fi
+      REGION="$2"
+      case ${REGION} in
 	      "us")
 	        ENDPOINT=jaas.oraclecloud.com
-	      ;;
+	        ;;
 	      "emea")
 	        ENDPOINT=jcs.emea.oraclecloud.com
-	      ;;
+	        ;;
 	      "jp")
 	        ENDPOINT=psm.jpcom.oraclecloud.com
-              ;;
-              *)
-	        echo "[ERROR] Invalid Region '${REGION}'"
-		exit 1
-	      ;;
-	    esac
-            shift
-        ;;
-
+          ;;
         *)
-            echo "[ERROR] Invalid option '${1}'"
-            usage
-            exit 1
-        ;;
-    esac
-    shift
+	        echo "[ERROR] Invalid Region '${REGION}'"
+		      exit 1
+	        ;;
+	    esac
+      shift 2
+      ;;
+    'json' )
+      COMMAND="JSON"
+      shift 1
+      ;;
+    'instance' )
+      COMMAND="INSTANCE"
+      shift 1
+      ;;
+    'bulk' )
+      COMMAND="BULK"
+      shift 1
+      ;;
+    '--'|'-' )
+      shift 1
+      param+=( "$@" )
+      break
+      ;;
+    -*)
+      echo "$PROGNAME: illegal option -- '$(echo $1 | sed 's/^-*//')'" 1>&2
+      exit 1
+      ;;
+    *)
+      if [[ ! -z "$1" ]] && [[ ! "$1" =~ ^-+ ]]; then
+        param+=( "$1" )
+        shift 1
+      fi
+      ;;
+  esac
 done
 
-case ${COMMAND} in
-  "JSON")
-    generateJson
-  ;;
-
-  "INSTANCE")
-    createInstance
-  ;;
-
-  "BULK")
-    bulkCreate
-  ;;
-
-  *)
-    mainScript
-  ;;
-esac
+mainScript
