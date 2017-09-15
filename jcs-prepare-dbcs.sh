@@ -11,7 +11,7 @@ version="1.0.0"
 # ##################################################
 
 function mainScript() {
- scp -i ${SSHKEY} -oStrictHostKeyChecking=no human_resources/* oracle@${DBCSIP}:/u01/app/oracle/product/12.1.0/dbhome_1/demo/schema/human_resources/
+ scp -i ${SSHKEY} -oStrictHostKeyChecking=no resources/human_resources/* oracle@${DBCSIP}:/u01/app/oracle/product/12.1.0/dbhome_1/demo/schema/human_resources/
  ssh -i ${SSHKEY} oracle@${DBCSIP} ls -l /u01/app/oracle/product/12.1.0/dbhome_1/demo/schema/human_resources/
  ssh -i ${SSHKEY} oracle@${DBCSIP} sqlplus sys/${PASSWORD}@PDB1 as sysdba @/u01/app/oracle/product/12.1.0/dbhome_1/demo/schema/human_resources/hr_main_custom.sql
 }
